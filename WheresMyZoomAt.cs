@@ -812,6 +812,13 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
             ApplyZoomPatch();
         };
 
+        if (Settings.EnableZoomAtLaunch)
+        {
+			InitializeProcess();
+
+            ApplyZoomPatch();
+        }
+
         Settings.EnableFastZoom.OnPressed = () =>
         {
             InitializeProcess();
@@ -820,6 +827,13 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
             ApplyFastZoomPatch();
         };
 
+        if (Settings.EnableFastZoomAtLaunch)
+        {
+            InitializeProcess();
+
+            ApplyIncrementalZoomPatch();
+            ApplyFastZoomPatch();
+        }
 
         Settings.EnableNoFog.OnPressed = () =>
         {
@@ -829,12 +843,27 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
             ApplyFogPatch2();
         };
 
+        if (Settings.EnableNoFogAtLaunch)
+        {
+            InitializeProcess();
+
+            ApplyFogPatch1();
+            ApplyFogPatch2();
+        }
+
         Settings.EnableNoBlackBox.OnPressed = () =>
         {
             InitializeProcess();
 
             ApplyNoBlackBoxPatch(50000.0f);
         };
+
+        if (Settings.EnableNoFogAtLaunch)
+        {
+            InitializeProcess();
+
+            ApplyNoBlackBoxPatch(50000.0f);
+        }
 
         Settings.EnableBrightness.OnPressed = () =>
         {
@@ -843,6 +872,14 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
             ApplyBrightnessPatch(10000.0f);
             ApplyBrightnessHeight();
         };
+
+        if (Settings.EnableBrightnessAtLaunch)
+        {
+            InitializeProcess();
+
+            ApplyBrightnessPatch(10000.0f);
+            ApplyBrightnessHeight();
+        }
 
         if (new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator))
         {
