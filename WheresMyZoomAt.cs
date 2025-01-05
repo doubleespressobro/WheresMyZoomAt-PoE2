@@ -298,7 +298,7 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
 
         if (!WriteValueToMemory(atlasMemoryAllocation, 30.0f)) return;
 
-        IntPtr atlasPatchAddress = IntPtr.Add(atlasMemoryAllocation, sizeof(float));
+        IntPtr atlasPatchAddress = IntPtr.Add(atlasMemoryAllocation, sizeof(float) + 4);
 
         IntPtr patchAtlasAddress = (nint)SigScan.FindPattern("? ? ? ? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 00 00 00 00 00 00 00 00 00 00 00 F3 ? A0 40 00 FF FF 00 FF FF FF", out _);
         if (patchAtlasAddress == IntPtr.Zero)
