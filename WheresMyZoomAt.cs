@@ -300,7 +300,7 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
 
         IntPtr atlasPatchAddress = IntPtr.Add(atlasMemoryAllocation, sizeof(float) + 62);
 
-        IntPtr patchAtlasAddress = (nint)SigScan.FindPattern("20 30 02 C4 21 02 00 00 00 00 00 00 00 00 00 00 00 00 34 13 00 00 00 00 00 00 07 00 00 00 00 00 ? ? ? ? 00 00 00 44", out _);
+        IntPtr patchAtlasAddress = (nint)SigScan.FindPattern("20 30 ? ? ? 02 00 00 00 00 00 00 00 00 00 00 00 00 ? ? 00 00 00 00 00 00 ? 00 00 00 00 00 ? ? ? ? 00 00 00 ?", out _);
         if (patchAtlasAddress == IntPtr.Zero)
         {
             DebugWindow.LogError("Failed to find ATLAS patch address.");
