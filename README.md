@@ -1,5 +1,5 @@
-# WheresMyZoomAtAt-PoE2
+**# WheresMyZoomAtAt-PoE2**
 
-probably doesnt work on steam client xd
+Probably doesn't work on **Steam Client**
 
-Note: Make sure you run HUD as admin or it wont be able to allocate memory
+**Note:** Make sure you run HUD as **ADMIN** or it wont be able to allocate memory
