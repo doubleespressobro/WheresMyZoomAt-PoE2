@@ -1,4 +1,4 @@
-**# WheresMyZoomAtAt-PoE2**
+**# WheresMyZoomAt-LARS | POE2**
 
 Probably doesn't work on **Steam Client**
 
