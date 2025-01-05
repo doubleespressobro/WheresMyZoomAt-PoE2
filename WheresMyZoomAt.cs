@@ -287,36 +287,48 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
         if (!WriteMinssInstruction(zoomMemoryAllocation, zoomPatchAddress, patchAddress)) return;
     }
 
-    private void ApplyAtlasPatch()
+private void ApplyAtlasPatch()
+{
+    /* 
+        Patches a memory section, modifies the last 8 bytes of a signature, 
+        and applies a relative jump for the ATLAS patch.
+    */
+
+    IntPtr atlasMemoryAllocation = FindUnusedSection(baseAddress - 0x10000, 1000, 10);
+    if (atlasMemoryAllocation == IntPtr.Zero) return;
+
+    if (!WriteValueToMemory(atlasMemoryAllocation, 30.0f)) return;
+
+    IntPtr atlasPatchAddress = IntPtr.Add(atlasMemoryAllocation, sizeof(float) + 62);
+
+    // Locate the memory pattern
+    IntPtr patchAtlasAddress = (nint)SigScan.FindPattern("08 8C CA C8 32 02 00 00 30 C8 EB A3 36 02 00 00 C0 CA EB A3 36 02 00 00 50 CD EB A3 36 02 00 00 20 86 4C A0 30 02", out _);
+    if (patchAtlasAddress == IntPtr.Zero)
     {
-        /* 
-	
-        */
-
-        IntPtr atlasMemoryAllocation = FindUnusedSection(baseAddress - 0x10000, 1000, 10);
-        if (atlasMemoryAllocation == IntPtr.Zero) return;
-
-        if (!WriteValueToMemory(atlasMemoryAllocation, 30.0f)) return;
-
-        IntPtr atlasPatchAddress = IntPtr.Add(atlasMemoryAllocation, sizeof(float) + 62);
-
-        IntPtr patchAtlasAddress = (nint)SigScan.FindPattern("20 30 ? ? ? 02 00 00 00 00 00 00 00 00 00 00 00 00 ? ? 00 00 00 00 00 00 ? 00 00 00 00 00 ? ? ? ? 00 00 00 ?", out _);
-        if (patchAtlasAddress == IntPtr.Zero)
-        {
-            DebugWindow.LogError("Failed to find ATLAS patch address.");
-            return;
-        }
-
-        long relativeAddress = atlasPatchAddress.ToInt64() - IntPtr.Add(patchAtlasAddress, 5).ToInt64();
-
-        if (!WriteJumpToMemory(patchAtlasAddress, relativeAddress, 3, false)) return;
-
-        IntPtr afterMinssAddress = IntPtr.Add(atlasPatchAddress, 5 + 3);
-        long atlasH1RelativeAddress = atlasMemoryAllocation.ToInt64() - afterMinssAddress.ToInt64();
-
-        if (!WriteMinssInstruction(atlasMemoryAllocation, atlasPatchAddress, patchAtlasAddress)) return;
+        DebugWindow.LogError("Failed to find ATLAS patch address.");
+        return;
     }
 
+    // Modify the last 8 bytes of the located pattern
+    IntPtr last8BytesAddress = IntPtr.Add(patchAtlasAddress, 36); // 36 = total bytes in pattern - 8
+    byte[] newBytes = { 0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x80, 0x3F };
+
+    if (!WriteBytesToMemory(last8BytesAddress, newBytes))
+    {
+        DebugWindow.LogError("Failed to write new values to ATLAS patch address.");
+        return;
+    }
+
+    // Calculate relative jump
+    long relativeAddress = atlasPatchAddress.ToInt64() - IntPtr.Add(patchAtlasAddress, 5).ToInt64();
+
+    if (!WriteJumpToMemory(patchAtlasAddress, relativeAddress, 3, false)) return;
+
+    IntPtr afterMinssAddress = IntPtr.Add(atlasPatchAddress, 5 + 3);
+    long atlasH1RelativeAddress = atlasMemoryAllocation.ToInt64() - afterMinssAddress.ToInt64();
+
+    if (!WriteMinssInstruction(atlasMemoryAllocation, atlasPatchAddress, patchAtlasAddress)) return;
+}
 
     private void ApplyFogPatch1()
     {
