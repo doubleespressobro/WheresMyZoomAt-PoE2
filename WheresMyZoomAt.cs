@@ -287,6 +287,36 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
         if (!WriteMinssInstruction(zoomMemoryAllocation, zoomPatchAddress, patchAddress)) return;
     }
 
+    private void ApplyAtlasPatch()
+    {
+        /* 
+	
+        */
+
+        IntPtr atlasMemoryAllocation = FindUnusedSection(baseAddress - 0x10000, 1000, 10);
+        if (atlasMemoryAllocation == IntPtr.Zero) return;
+
+        if (!WriteValueToMemory(atlasMemoryAllocation, 30.0f)) return;
+
+        IntPtr atlasPatchAddress = IntPtr.Add(atlasMemoryAllocation, sizeof(float));
+
+        IntPtr patchAtlasAddress = (nint)SigScan.FindPattern("? ? ? ? 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 07 00 00 00 00 00 00 00 00 00 00 00 F3 ? A0 40 00 FF FF 00 FF FF FF", out _);
+        if (patchAtlasAddress == IntPtr.Zero)
+        {
+            DebugWindow.LogError("Failed to find ATLAS patch address.");
+            return;
+        }
+
+        long relativeAddress = zoomPatchAddress.ToInt64() - IntPtr.Add(patchAtlasAddress, 5).ToInt64();
+
+        if (!WriteJumpToMemory(patchAtlasAddress, relativeAddress, 3, false)) return;
+
+        IntPtr afterMinssAddress = IntPtr.Add(atlasPatchAddress, 5 + 3);
+        long atlasH1RelativeAddress = atlasMemoryAllocation.ToInt64() - afterMinssAddress.ToInt64();
+
+        if (!WriteMinssInstruction(atlasMemoryAllocation, atlasPatchAddress, patchAtlasAddress)) return;
+    }
+
 
     private void ApplyFogPatch1()
     {
