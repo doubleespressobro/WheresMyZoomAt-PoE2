@@ -295,7 +295,7 @@ private void ApplyAtlasPatch()
     */
 
     // Locate the memory pattern
-    IntPtr patchAtlasAddress = (nint)SigScan.FindPattern("80 3F ? ? ? ? 10 ? ? ? 32 02 00 00 ? ? ? ? 32 02 00 00 ? ? ? ? 32 02 00 00 ? ? ? ? 32 02 00 00 ? ? ? A3 36 02 00 00 ? ? ? A3 ? 02 00 00 ? ? ? A3 36 02 00 00 ? ? ? ? 30 02 00 00 ? ? ? ? 32 02 00 00 ? ? ? ? 32 02 00 00 ? ? ? ? 36 02 00 00 ? ? ? ? 36 02 00 00 ? ? ? ? 32 02 00 00 ? ? ? ? 36 02 00 00 ? ? ? A3 30 02 00 00", out _);
+    IntPtr patchAtlasAddress = (nint)SigScan.FindPattern("80 3F ? ? ? ? 10 ? ? ? 32 02 00 00 ? ? ? ? 32 02 00 00 ? ? ? ? 32 02 00 00 ? ? ? ? 32 02 00 00 ? ? ? A3 36 02 00 00 ? ? ? A3 ? 02 00 00 ? ? ? A3 36 02 00 00 ? ? ? ? 30 02 00 00 ? ? ? ? 32 02 00 00 ? ? ? ? 32 02 00 00 ? ? ? ? 36 02 00 00 ? ? ? ? 36 02 00 00 ? ? ? ? 32 02 00 00 ? ? ? ? 36 02 00 00 ? ? ? A3 30 02 00 00 ? ? ? ?", out _);
     if (patchAtlasAddress == IntPtr.Zero)
     {
         DebugWindow.LogError("Failed to find ATLAS patch address.");
@@ -303,10 +303,10 @@ private void ApplyAtlasPatch()
     }
 
     // Calculate the address of the last 8 bytes in the pattern
-    IntPtr last8BytesAddress = IntPtr.Add(patchAtlasAddress, 72); // 72 = Total bytes in the pattern - 8
+    IntPtr last8BytesAddress = IntPtr.Add(patchAtlasAddress, 155); // 159 = Total bytes in the pattern - 4
 
     // Define the new bytes to write
-    byte[] newBytes = { 0x00, 0x00, 0x80, 0x3F, 0x00, 0x00, 0x80, 0x3F };
+    byte[] newBytes = { 0x00, 0x00, 0x80, 0x3F };
 
     // Write the new bytes to memory
     if (!WriteBytesToMemory(last8BytesAddress, newBytes))
