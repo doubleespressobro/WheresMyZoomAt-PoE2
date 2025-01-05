@@ -303,19 +303,19 @@ private void ApplyAtlasPatch()
     }
 
     // Calculate the address of the last 8 bytes in the pattern
-    IntPtr last8BytesAddress = IntPtr.Add(patchAtlasAddress, 660); // 155 = Total bytes in the pattern - 4
+    IntPtr last4BytesAddress = IntPtr.Add(patchAtlasAddress, 660); // 155 = Total bytes in the pattern - 4
 
     // Define the new bytes to write
     byte[] newBytes = { 0x00, 0x00, 0x80, 0x3F };
 
     // Write the new bytes to memory
-    if (!WriteBytesToMemory(last8BytesAddress, newBytes))
+    if (!WriteBytesToMemory(last4BytesAddress, newBytes))
     {
-        DebugWindow.LogError("Failed to write new values to the last 8 bytes.");
+        DebugWindow.LogError("Failed to write new values to the last 4 bytes.");
         return;
     }
 
-    DebugWindow.LogError("Successfully modified the last 8 bytes of the pattern.");
+    DebugWindow.LogError("Successfully modified the last 4 bytes of the pattern.");
 }
 
 // Helper function to write bytes to memory
