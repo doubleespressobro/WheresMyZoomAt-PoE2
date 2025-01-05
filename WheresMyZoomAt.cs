@@ -848,6 +848,20 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
 
             ApplyZoomPatch();
         }
+	
+	Settings.EnableAtlasZoom.OnPressed = () =>
+        {
+            InitializeProcess();
+
+            ApplyZoomPatch();
+        };
+
+        if (Settings.EnableAtlasZoomAtLaunch)
+        {
+	    InitializeProcess();
+
+            ApplyZoomPatch();
+        }
 
         Settings.EnableFastZoom.OnPressed = () =>
         {
