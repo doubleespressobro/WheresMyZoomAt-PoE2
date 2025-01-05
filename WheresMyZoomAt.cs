@@ -315,7 +315,7 @@ private void ApplyAtlasPatch()
         return;
     }
 
-    DebugWindow.Log("Successfully modified the last 8 bytes of the pattern.");
+    DebugWindow.LogError("Successfully modified the last 8 bytes of the pattern.");
 }
 
 // Helper function to write bytes to memory
