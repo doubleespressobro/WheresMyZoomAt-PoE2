@@ -307,7 +307,7 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
             return;
         }
 
-        long relativeAddress = zoomPatchAddress.ToInt64() - IntPtr.Add(patchAtlasAddress, 5).ToInt64();
+        long relativeAddress = atlasPatchAddress.ToInt64() - IntPtr.Add(patchAtlasAddress, 5).ToInt64();
 
         if (!WriteJumpToMemory(patchAtlasAddress, relativeAddress, 3, false)) return;
 
