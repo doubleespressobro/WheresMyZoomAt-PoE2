@@ -13,6 +13,9 @@ public class WheresMyZoomAtSettings : ISettings
     public ButtonNode EnableFastZoom { get; set; } = new ButtonNode();
     public ToggleNode EnableFastZoomAtLaunch { get; set; } = new ToggleNode(false);
 
+    public ButtonNode EnableAtlasZoom { get; set; } = new ButtonNode();
+    public ToggleNode EnableAtlasZoomAtLaunch { get; set; } = new ToggleNode(false);
+    
     public ButtonNode EnableNoFog { get; set; } = new ButtonNode();
     public ToggleNode EnableNoFogAtLaunch { get; set; } = new ToggleNode(false);
 
