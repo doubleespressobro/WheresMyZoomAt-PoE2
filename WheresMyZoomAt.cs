@@ -853,14 +853,14 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
         {
             InitializeProcess();
 
-            ApplyZoomPatch();
+            ApplyAtlasPatch();
         };
 
         if (Settings.EnableAtlasZoomAtLaunch)
         {
 	    InitializeProcess();
 
-            ApplyZoomPatch();
+            ApplyAtlasPatch();
         }
 
         Settings.EnableFastZoom.OnPressed = () =>
