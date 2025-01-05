@@ -14,9 +14,9 @@ public class WheresMyZoomAtSettings : ISettings
     public ButtonNode EnableFastZoom { get; set; } = new ButtonNode();
     public ToggleNode EnableFastZoomAtLaunch { get; set; } = new ToggleNode(false);
 
-    [Menu("Atlas Unzoom feature doesn't work right now.", "Please do not click this as it could create bugs.")]
+    [Menu("Enable Atlas Unzoom", "DOESN'T WORK !")]
     public ButtonNode EnableAtlasZoom { get; set; } = new ButtonNode();
-    [Menu("Atlas Unzoom feature doesn't work right now.", "Please do not click this as it could create bugs.")]
+    [Menu("Enable Atlas Unzoom", "DOESN'T WORK !")]
     public ToggleNode EnableAtlasZoomAtLaunch { get; set; } = new ToggleNode(false);
     
     public ButtonNode EnableNoFog { get; set; } = new ButtonNode();
