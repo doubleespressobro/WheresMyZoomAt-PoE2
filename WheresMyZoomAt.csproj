@@ -17,13 +17,11 @@
     <PackageReference Include="SharpDX.Mathematics" Version="4.2.0" />
   </ItemGroup>
   <ItemGroup>
-    <!--Rather than replacing this with absolute or relative paths, you should create an environment variable for wherever your HUD folder is-->
-    <Reference Include="ExileCore">
-      <HintPath>$(exileCore2Package)\ExileCore2.dll</HintPath>
+    <Reference Include="ExileCore2">
+      <HintPath>..\..\..\Documents\Hacks\POE2Launch\ExileCore2_250103-1.0.0+e3f99f86c4d631c0463e99e5a2ecd69fce6447be\ExileCore2.dll</HintPath>
     </Reference>
-    <Reference Include="GameOffsets">
-      <HintPath>$(exileCore2Package)\GameOffsets2.dll</HintPath>
-      <Private></Private>
+    <Reference Include="GameOffsets2">
+      <HintPath>..\..\..\Documents\Hacks\POE2Launch\ExileCore2_250103-1.0.0+e3f99f86c4d631c0463e99e5a2ecd69fce6447be\GameOffsets2.dll</HintPath>
     </Reference>
   </ItemGroup>
 </Project>

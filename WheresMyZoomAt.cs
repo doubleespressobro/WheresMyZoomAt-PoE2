@@ -5,6 +5,10 @@ using System.Numerics;
 using System.Linq;
 using System.Security.Principal;
 using ImGuiNET;
+using ExileCore2.Shared.Helpers;
+using GameOffsets2;
+using System.Threading.Tasks;
+using System.Configuration;
 
 namespace WheresMyZoomAt;
 
@@ -16,7 +20,7 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
     const uint MEM_RESERVE = 0x2000;
     const uint MEM_FREE = 0x00010000;
 
-    
+
     const uint PAGE_EXECUTE_READWRITE = 0x40;
     const uint PAGE_NOACCESS = 0x01;
 
@@ -194,7 +198,7 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
                 nopInstruction[2] = 0x40;
                 nopInstruction[3] = 0x00;
             }
-            else if(nopSize == 3)
+            else if (nopSize == 3)
             {
                 nopInstruction[0] = 0x0F;
                 nopInstruction[1] = 0x1F;
@@ -287,6 +291,46 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
         if (!WriteMinssInstruction(zoomMemoryAllocation, zoomPatchAddress, patchAddress)) return;
     }
 
+    private async void ApplyAtlasPatch()
+    {
+        if (Settings.ZoomMenu.KeepAtlasZoom)
+        {
+            var atlasAddress = GameController.IngameState.IngameUi.WorldMap.AtlasPanel.Address;
+            var scaleOffset = Extensions.GetOffset<ElementOffsets>(x => x.Scale);
+            var targetAddress = IntPtr.Add(new IntPtr(atlasAddress), scaleOffset);
+
+            var valueBytes = BitConverter.GetBytes(Settings.ZoomMenu.AtlasUnzoomValue.Value);
+
+            if (WriteProcessMemory(processHandle, targetAddress, valueBytes, (uint)valueBytes.Length, out _))
+            {
+                await Task.Delay(400);
+                ApplyAtlasPatch();
+            }
+        }
+        else
+        {
+            var atlasAddress = GameController.IngameState.IngameUi.WorldMap.AtlasPanel.Address;
+            var scaleOffset = Extensions.GetOffset<ElementOffsets>(x => x.Scale);
+            var targetAddress = IntPtr.Add(new IntPtr(atlasAddress), scaleOffset);
+
+            var valueBytes = BitConverter.GetBytes(Settings.ZoomMenu.AtlasUnzoomValue.Value);
+        }
+    }
+
+    // Helper function to write bytes to memory
+    private bool WriteBytesToMemory(IntPtr address, byte[] bytes)
+    {
+        try
+        {
+            Marshal.Copy(bytes, 0, address, bytes.Length);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            DebugWindow.LogError($"Error writing bytes to memory: {ex.Message}");
+            return false;
+        }
+    }
 
     private void ApplyFogPatch1()
     {
@@ -744,7 +788,7 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
 
         IntPtr valueAddress = patchMemoryAllocation;
 
-        IntPtr addressAfterInstruction = IntPtr.Add(patchMemoryAllocation, 16 + 7); 
+        IntPtr addressAfterInstruction = IntPtr.Add(patchMemoryAllocation, 16 + 7);
         int relativeValueAddress = (int)(valueAddress.ToInt64() - addressAfterInstruction.ToInt64());
 
         Span<byte> newCode = stackalloc byte[13];
@@ -805,14 +849,35 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
 
     public override void OnLoad()
     {
-        Settings.EnableZoom.OnPressed = () =>
+        Settings.ZoomMenu.EnableZoom.OnPressed = () =>
         {
             InitializeProcess();
 
             ApplyZoomPatch();
         };
 
-        Settings.EnableFastZoom.OnPressed = () =>
+        if (Settings.ZoomMenu.EnableZoomAtLaunch)
+        {
+            InitializeProcess();
+
+            ApplyZoomPatch();
+        }
+
+        Settings.ZoomMenu.EnableAtlasZoom.OnPressed = () =>
+        {
+            InitializeProcess();
+
+            ApplyAtlasPatch();
+        };
+
+        if (Settings.ZoomMenu.EnableAtlasZoomAtLaunch)
+        {
+            InitializeProcess();
+
+            ApplyAtlasPatch();
+        }
+
+        Settings.ZoomMenu.EnableFastZoom.OnPressed = () =>
         {
             InitializeProcess();
 
@@ -820,8 +885,15 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
             ApplyFastZoomPatch();
         };
 
+        if (Settings.ZoomMenu.EnableFastZoomAtLaunch)
+        {
+            InitializeProcess();
 
-        Settings.EnableNoFog.OnPressed = () =>
+            ApplyIncrementalZoomPatch();
+            ApplyFastZoomPatch();
+        }
+
+        Settings.QOLMenu.EnableNoFog.OnPressed = () =>
         {
             InitializeProcess();
 
@@ -829,20 +901,43 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
             ApplyFogPatch2();
         };
 
-        Settings.EnableNoBlackBox.OnPressed = () =>
+        if (Settings.QOLMenu.EnableNoFogAtLaunch)
+        {
+            InitializeProcess();
+
+            ApplyFogPatch1();
+            ApplyFogPatch2();
+        }
+
+        Settings.QOLMenu.EnableNoBlackBox.OnPressed = () =>
         {
             InitializeProcess();
 
             ApplyNoBlackBoxPatch(50000.0f);
         };
 
-        Settings.EnableBrightness.OnPressed = () =>
+        if (Settings.QOLMenu.EnableNoFogAtLaunch)
+        {
+            InitializeProcess();
+
+            ApplyNoBlackBoxPatch(50000.0f);
+        }
+
+        Settings.QOLMenu.EnableBrightness.OnPressed = () =>
         {
             InitializeProcess();
 
             ApplyBrightnessPatch(10000.0f);
             ApplyBrightnessHeight();
         };
+
+        if (Settings.QOLMenu.EnableBrightnessAtLaunch)
+        {
+            InitializeProcess();
+
+            ApplyBrightnessPatch(10000.0f);
+            ApplyBrightnessHeight();
+        }
 
         if (new WindowsPrincipal(WindowsIdentity.GetCurrent()).IsInRole(WindowsBuiltInRole.Administrator))
         {
@@ -855,7 +950,7 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
         if (!_isAdmin)
         {
             ImGui.Begin("Warning");
-            
+
             string msg = "You need to run the ExileCore2 as admin for WheresMyZoomAt to function.";
 
             var windowRect = GameController.Window.GetWindowRectangleReal();
