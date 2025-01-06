@@ -289,33 +289,13 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
 
 private void ApplyAtlasPatch()
 {
-    /* 
-        This function locates a specific memory pattern and modifies the last 8 bytes
-        of the pattern to "00 00 80 3F 00 00 80 3F".
-    */
+var atlasAddress = GameController.IngameState.IngameUi.WorldMap.AtlasPanel.Address;
+var scaleOffset = Extensions.GetOffset<ElementOffsets>(x => x.Scale);
+var targetAddress = IntPtr.Add(new IntPtr(atlasAddress), scaleOffset);
 
-    // Locate the memory pattern
-    IntPtr patchAtlasAddress = (nint)SigScan.FindPattern("78 30 7C BF 32 02 00 00 78 30 7C BF 32 02 00 00 28 31 7C BF 32 02 00 00 06 E0 02 00 C0 69 00 00 60 80 0F 5E 10 A1 05 06", out _);
-    if (patchAtlasAddress == IntPtr.Zero)
-    {
-        DebugWindow.LogError("Failed to find ATLAS patch address.");
-        return;
-    }
+var valueBytes = BitConverter.GetBytes(0.5f);
 
-    // Calculate the address of the last 8 bytes in the pattern
-    IntPtr last4BytesAddress = IntPtr.Add(patchAtlasAddress, 660); // 155 = Total bytes in the pattern - 4
-
-    // Define the new bytes to write
-    byte[] newBytes = { 0x00, 0x00, 0x80, 0x3F };
-
-    // Write the new bytes to memory
-    if (!WriteBytesToMemory(last4BytesAddress, newBytes))
-    {
-        DebugWindow.LogError("Failed to write new values to the last 4 bytes.");
-        return;
-    }
-
-    DebugWindow.LogError("Successfully modified the last 4 bytes of the pattern.");
+WriteProcessMemory(processHandle, targetAddress, valueBytes, (uint)valueBytes.Length, out _);
 }
 
 // Helper function to write bytes to memory
