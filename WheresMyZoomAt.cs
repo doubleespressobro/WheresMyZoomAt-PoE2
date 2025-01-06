@@ -7,6 +7,8 @@ using System.Security.Principal;
 using ImGuiNET;
 using ExileCore2.Shared.Helpers;
 using GameOffsets2;
+using System.Threading.Tasks;
+using System.Configuration;
 
 namespace WheresMyZoomAt;
 
@@ -18,7 +20,7 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
     const uint MEM_RESERVE = 0x2000;
     const uint MEM_FREE = 0x00010000;
 
-    
+
     const uint PAGE_EXECUTE_READWRITE = 0x40;
     const uint PAGE_NOACCESS = 0x01;
 
@@ -196,7 +198,7 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
                 nopInstruction[2] = 0x40;
                 nopInstruction[3] = 0x00;
             }
-            else if(nopSize == 3)
+            else if (nopSize == 3)
             {
                 nopInstruction[0] = 0x0F;
                 nopInstruction[1] = 0x1F;
@@ -289,31 +291,46 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
         if (!WriteMinssInstruction(zoomMemoryAllocation, zoomPatchAddress, patchAddress)) return;
     }
 
-private void ApplyAtlasPatch()
-{
-var atlasAddress = GameController.IngameState.IngameUi.WorldMap.AtlasPanel.Address;
-var scaleOffset = Extensions.GetOffset<ElementOffsets>(x => x.Scale);
-var targetAddress = IntPtr.Add(new IntPtr(atlasAddress), scaleOffset);
-
-var valueBytes = BitConverter.GetBytes(0.5f);
-
-WriteProcessMemory(processHandle, targetAddress, valueBytes, (uint)valueBytes.Length, out _);
-}
-
-// Helper function to write bytes to memory
-private bool WriteBytesToMemory(IntPtr address, byte[] bytes)
-{
-    try
+    private async void ApplyAtlasPatch()
     {
-        Marshal.Copy(bytes, 0, address, bytes.Length);
-        return true;
+        if (Settings.ZoomMenu.KeepAtlasZoom)
+        {
+            var atlasAddress = GameController.IngameState.IngameUi.WorldMap.AtlasPanel.Address;
+            var scaleOffset = Extensions.GetOffset<ElementOffsets>(x => x.Scale);
+            var targetAddress = IntPtr.Add(new IntPtr(atlasAddress), scaleOffset);
+
+            var valueBytes = BitConverter.GetBytes(Settings.ZoomMenu.AtlasUnzoomValue.Value);
+
+            if (WriteProcessMemory(processHandle, targetAddress, valueBytes, (uint)valueBytes.Length, out _))
+            {
+                await Task.Delay(400);
+                ApplyAtlasPatch();
+            }
+        }
+        else
+        {
+            var atlasAddress = GameController.IngameState.IngameUi.WorldMap.AtlasPanel.Address;
+            var scaleOffset = Extensions.GetOffset<ElementOffsets>(x => x.Scale);
+            var targetAddress = IntPtr.Add(new IntPtr(atlasAddress), scaleOffset);
+
+            var valueBytes = BitConverter.GetBytes(Settings.ZoomMenu.AtlasUnzoomValue.Value);
+        }
     }
-    catch (Exception ex)
+
+    // Helper function to write bytes to memory
+    private bool WriteBytesToMemory(IntPtr address, byte[] bytes)
     {
-        DebugWindow.LogError($"Error writing bytes to memory: {ex.Message}");
-        return false;
+        try
+        {
+            Marshal.Copy(bytes, 0, address, bytes.Length);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            DebugWindow.LogError($"Error writing bytes to memory: {ex.Message}");
+            return false;
+        }
     }
-}
 
     private void ApplyFogPatch1()
     {
@@ -771,7 +788,7 @@ private bool WriteBytesToMemory(IntPtr address, byte[] bytes)
 
         IntPtr valueAddress = patchMemoryAllocation;
 
-        IntPtr addressAfterInstruction = IntPtr.Add(patchMemoryAllocation, 16 + 7); 
+        IntPtr addressAfterInstruction = IntPtr.Add(patchMemoryAllocation, 16 + 7);
         int relativeValueAddress = (int)(valueAddress.ToInt64() - addressAfterInstruction.ToInt64());
 
         Span<byte> newCode = stackalloc byte[13];
@@ -832,35 +849,35 @@ private bool WriteBytesToMemory(IntPtr address, byte[] bytes)
 
     public override void OnLoad()
     {
-        Settings.EnableZoom.OnPressed = () =>
+        Settings.ZoomMenu.EnableZoom.OnPressed = () =>
         {
             InitializeProcess();
 
             ApplyZoomPatch();
         };
 
-        if (Settings.EnableZoomAtLaunch)
+        if (Settings.ZoomMenu.EnableZoomAtLaunch)
         {
-			InitializeProcess();
+            InitializeProcess();
 
             ApplyZoomPatch();
         }
-	
-	Settings.EnableAtlasZoom.OnPressed = () =>
+
+        Settings.ZoomMenu.EnableAtlasZoom.OnPressed = () =>
         {
             InitializeProcess();
 
             ApplyAtlasPatch();
         };
 
-        if (Settings.EnableAtlasZoomAtLaunch)
+        if (Settings.ZoomMenu.EnableAtlasZoomAtLaunch)
         {
-	    InitializeProcess();
+            InitializeProcess();
 
             ApplyAtlasPatch();
         }
 
-        Settings.EnableFastZoom.OnPressed = () =>
+        Settings.ZoomMenu.EnableFastZoom.OnPressed = () =>
         {
             InitializeProcess();
 
@@ -868,7 +885,7 @@ private bool WriteBytesToMemory(IntPtr address, byte[] bytes)
             ApplyFastZoomPatch();
         };
 
-        if (Settings.EnableFastZoomAtLaunch)
+        if (Settings.ZoomMenu.EnableFastZoomAtLaunch)
         {
             InitializeProcess();
 
@@ -876,7 +893,7 @@ private bool WriteBytesToMemory(IntPtr address, byte[] bytes)
             ApplyFastZoomPatch();
         }
 
-        Settings.EnableNoFog.OnPressed = () =>
+        Settings.QOLMenu.EnableNoFog.OnPressed = () =>
         {
             InitializeProcess();
 
@@ -884,7 +901,7 @@ private bool WriteBytesToMemory(IntPtr address, byte[] bytes)
             ApplyFogPatch2();
         };
 
-        if (Settings.EnableNoFogAtLaunch)
+        if (Settings.QOLMenu.EnableNoFogAtLaunch)
         {
             InitializeProcess();
 
@@ -892,21 +909,21 @@ private bool WriteBytesToMemory(IntPtr address, byte[] bytes)
             ApplyFogPatch2();
         }
 
-        Settings.EnableNoBlackBox.OnPressed = () =>
+        Settings.QOLMenu.EnableNoBlackBox.OnPressed = () =>
         {
             InitializeProcess();
 
             ApplyNoBlackBoxPatch(50000.0f);
         };
 
-        if (Settings.EnableNoFogAtLaunch)
+        if (Settings.QOLMenu.EnableNoFogAtLaunch)
         {
             InitializeProcess();
 
             ApplyNoBlackBoxPatch(50000.0f);
         }
 
-        Settings.EnableBrightness.OnPressed = () =>
+        Settings.QOLMenu.EnableBrightness.OnPressed = () =>
         {
             InitializeProcess();
 
@@ -914,7 +931,7 @@ private bool WriteBytesToMemory(IntPtr address, byte[] bytes)
             ApplyBrightnessHeight();
         };
 
-        if (Settings.EnableBrightnessAtLaunch)
+        if (Settings.QOLMenu.EnableBrightnessAtLaunch)
         {
             InitializeProcess();
 
@@ -933,7 +950,7 @@ private bool WriteBytesToMemory(IntPtr address, byte[] bytes)
         if (!_isAdmin)
         {
             ImGui.Begin("Warning");
-            
+
             string msg = "You need to run the ExileCore2 as admin for WheresMyZoomAt to function.";
 
             var windowRect = GameController.Window.GetWindowRectangleReal();
