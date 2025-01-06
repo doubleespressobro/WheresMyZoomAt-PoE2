@@ -5,6 +5,8 @@ using System.Numerics;
 using System.Linq;
 using System.Security.Principal;
 using ImGuiNET;
+using ExileCore2.Shared.Helpers;
+using GameOffsets2;
 
 namespace WheresMyZoomAt;
 
