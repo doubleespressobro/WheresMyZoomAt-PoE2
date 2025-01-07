@@ -291,47 +291,15 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
         if (!WriteMinssInstruction(zoomMemoryAllocation, zoomPatchAddress, patchAddress)) return;
     }
 
-    private async void ApplyAtlasPatch()
+    private void ApplyAtlasPatch()
     {
-        if (Settings.ZoomMenu.KeepAtlasZoom)
-        {
-            var atlasAddress = GameController.IngameState.IngameUi.WorldMap.AtlasPanel.Address;
-            var scaleOffset = Extensions.GetOffset<ElementOffsets>(x => x.Scale);
-            var targetAddress = IntPtr.Add(new IntPtr(atlasAddress), scaleOffset);
+        var atlasAddress = GameController.IngameState.IngameUi.WorldMap.AtlasPanel.Address;
+        var scaleOffset = Extensions.GetOffset<ElementOffsets>(x => x.Scale);
+        var targetAddress = IntPtr.Add(new IntPtr(atlasAddress), scaleOffset);
 
-            var valueBytes = BitConverter.GetBytes(Settings.ZoomMenu.AtlasUnzoomValue.Value);
+        var valueBytes = BitConverter.GetBytes(Settings.ZoomMenu.AtlasZoomValue.Value);
 
-            if (WriteProcessMemory(processHandle, targetAddress, valueBytes, (uint)valueBytes.Length, out _))
-            {
-                await Task.Delay(400);
-                ApplyAtlasPatch();
-            }
-        }
-        else
-        {
-            var atlasAddress = GameController.IngameState.IngameUi.WorldMap.AtlasPanel.Address;
-            var scaleOffset = Extensions.GetOffset<ElementOffsets>(x => x.Scale);
-            var targetAddress = IntPtr.Add(new IntPtr(atlasAddress), scaleOffset);
-
-            var valueBytes = BitConverter.GetBytes(Settings.ZoomMenu.AtlasUnzoomValue.Value);
-
-            WriteProcessMemory(processHandle, targetAddress, valueBytes, (uint)valueBytes.Length, out _);
-        }
-    }
-
-    // Helper function to write bytes to memory
-    private bool WriteBytesToMemory(IntPtr address, byte[] bytes)
-    {
-        try
-        {
-            Marshal.Copy(bytes, 0, address, bytes.Length);
-            return true;
-        }
-        catch (Exception ex)
-        {
-            DebugWindow.LogError($"Error writing bytes to memory: {ex.Message}");
-            return false;
-        }
+        WriteProcessMemory(processHandle, targetAddress, valueBytes, (uint)valueBytes.Length, out _);
     }
 
     private void ApplyFogPatch1()
@@ -849,94 +817,86 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
         }
     }
 
+    public override void Tick()
+    {
+        if (Settings.ZoomMenu.KeepAtlasZoom)
+        {
+            if (GameController.IngameState.IngameUi.WorldMap.AtlasPanel.Scale != Settings.ZoomMenu.AtlasZoomValue)
+            {
+                ApplyAtlasPatch();
+            }
+        }
+    }
+
     public override void OnLoad()
     {
-        Settings.ZoomMenu.EnableZoom.OnPressed = () =>
+        if(baseAddress == IntPtr.Zero)
         {
             InitializeProcess();
+        }
 
+        Settings.ZoomMenu.EnableZoom.OnPressed = () =>
+        {
             ApplyZoomPatch();
         };
 
         if (Settings.ZoomMenu.EnableZoomAtLaunch)
         {
-            InitializeProcess();
-
             ApplyZoomPatch();
         }
 
         Settings.ZoomMenu.EnableAtlasZoom.OnPressed = () =>
         {
-            InitializeProcess();
-
             ApplyAtlasPatch();
         };
 
         if (Settings.ZoomMenu.EnableAtlasZoomAtLaunch)
         {
-            InitializeProcess();
-
             ApplyAtlasPatch();
         }
 
         Settings.ZoomMenu.EnableFastZoom.OnPressed = () =>
         {
-            InitializeProcess();
-
             ApplyIncrementalZoomPatch();
             ApplyFastZoomPatch();
         };
 
         if (Settings.ZoomMenu.EnableFastZoomAtLaunch)
         {
-            InitializeProcess();
-
             ApplyIncrementalZoomPatch();
             ApplyFastZoomPatch();
         }
 
         Settings.QOLMenu.EnableNoFog.OnPressed = () =>
         {
-            InitializeProcess();
-
             ApplyFogPatch1();
             ApplyFogPatch2();
         };
 
         if (Settings.QOLMenu.EnableNoFogAtLaunch)
         {
-            InitializeProcess();
-
             ApplyFogPatch1();
             ApplyFogPatch2();
         }
 
         Settings.QOLMenu.EnableNoBlackBox.OnPressed = () =>
         {
-            InitializeProcess();
-
             ApplyNoBlackBoxPatch(50000.0f);
         };
 
         if (Settings.QOLMenu.EnableNoFogAtLaunch)
         {
-            InitializeProcess();
-
             ApplyNoBlackBoxPatch(50000.0f);
         }
 
         Settings.QOLMenu.EnableBrightness.OnPressed = () =>
         {
-            InitializeProcess();
-
             ApplyBrightnessPatch(10000.0f);
             ApplyBrightnessHeight();
         };
 
         if (Settings.QOLMenu.EnableBrightnessAtLaunch)
         {
-            InitializeProcess();
-
             ApplyBrightnessPatch(10000.0f);
             ApplyBrightnessHeight();
         }

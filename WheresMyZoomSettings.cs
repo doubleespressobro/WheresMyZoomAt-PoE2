@@ -8,34 +8,34 @@ public class WheresMyZoomAtSettings : ISettings
 {
     public ToggleNode Enable { get; set; } = new ToggleNode(false);
 
-    [Menu("Zoom Menu")]
+    [Menu("Zoom")]
     public ZoomMenu ZoomMenu { get; set; } = new ZoomMenu();
 
-    [Menu("QOL Menu")]
+    [Menu("Misc")]
     public QOLMenu QOLMenu { get; set; } = new QOLMenu();
 }
 
 [Submenu(CollapsedByDefault = false)]
 public class ZoomMenu
 {
-    [Menu("Enable Unzoom", "Scroll Mouse Wheel to unzoom further.")]
+    [Menu("Enable Zoom", "Allows you to zoom the game out further than usual.")]
     public ButtonNode EnableZoom { get; set; } = new ButtonNode();
-    [Menu("Enable Unzoom at Launch", "Scroll Mouse Wheel to unzoom further.")]
+    [Menu("Enable Unzoom on startup", "Automatically enable Zoom on startup.")]
     public ToggleNode EnableZoomAtLaunch { get; set; } = new ToggleNode(false);
 
-    [Menu("Enable Fast Zoom", "Scroll Mouse Wheel unzoom faster.")]
+    [Menu("Enable Fast Zoom", "Zooms in/out faster with scroll wheel.")]
     public ButtonNode EnableFastZoom { get; set; } = new ButtonNode();
-    [Menu("Enable Fast Zoom at Launch", "Scroll Mouse Wheel unzoom faster.")]
+    [Menu("Enable Fast Zoom on startup", "Automatically enable Fast Zoom on startup.")]
     public ToggleNode EnableFastZoomAtLaunch { get; set; } = new ToggleNode(false);
 
-    [Menu("Enable Atlas Unzoom", "Press the button and then drag the Atlas for it to unzoom.")]
+    [Menu("Enable Atlas Zoom", "Allows the atlas to be zoomed out further than usual.")]
     public ButtonNode EnableAtlasZoom { get; set; } = new ButtonNode();
-    [Menu("Enable Atlas Unzoom at launch", "Press the button and then drag the Atlas for it to unzoom.")]
+    [Menu("Enable Atlas Zoom on startup", "Automatically enable Atlas Zoom on startup. (Click+Drag the atlas so the value updates)")]
     public ToggleNode EnableAtlasZoomAtLaunch { get; set; } = new ToggleNode(false);
-    [Menu("Keep Unzoom Always running", "Press the button and then drag the Atlas for it to unzoom.")]
+    [Menu("Persistant Zoom Value", "Ensures the zoom value is rewritten if it ever gets overwritten. (Click+Drag the atlas so the value updates)")]
     public ToggleNode KeepAtlasZoom { get; set; } = new ToggleNode(false);
     [Menu("Atlas Unzoom Value", "The Higher the value, the more zoomed in.")]
-    public RangeNode<float> AtlasUnzoomValue { get; set; } = new RangeNode<float>(1.0f, 5f, 0.5f);
+    public RangeNode<float> AtlasZoomValue { get; set; } = new RangeNode<float>(1.0f, 5f, 0.5f);
 }
 
 [Submenu(CollapsedByDefault = false)]
