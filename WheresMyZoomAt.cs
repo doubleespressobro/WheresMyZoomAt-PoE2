@@ -274,7 +274,7 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
 
         IntPtr zoomPatchAddress = IntPtr.Add(zoomMemoryAllocation, sizeof(float) + 2);
 
-        IntPtr patchAddress = (nint)SigScan.FindPattern("F3 0F 5D ? ? ? ? ? F3 0F 11 ? ? ? ? ? C6", out _);
+        IntPtr patchAddress = (nint)SigScan.FindPattern("F3 0F 5D ? ? ? ? ? F3 0F 11 ? ? ? ? ? 41", out _);
         if (patchAddress == IntPtr.Zero)
         {
             DebugWindow.LogError("Failed to find zoom patch address.");
@@ -285,8 +285,8 @@ public class WheresMyZoomAt : BaseSettingsPlugin<WheresMyZoomAtSettings>
 
         if (!WriteJumpToMemory(patchAddress, relativeAddress, 3, false)) return;
 
-        IntPtr afterMinssAddress = IntPtr.Add(zoomPatchAddress, 5 + 3);
-        long zoomH1RelativeAddress = zoomMemoryAllocation.ToInt64() - afterMinssAddress.ToInt64();
+        //IntPtr afterMinssAddress = IntPtr.Add(zoomPatchAddress, 5 + 3);
+        //long zoomH1RelativeAddress = zoomMemoryAllocation.ToInt64() - afterMinssAddress.ToInt64();
 
         if (!WriteMinssInstruction(zoomMemoryAllocation, zoomPatchAddress, patchAddress)) return;
     }
